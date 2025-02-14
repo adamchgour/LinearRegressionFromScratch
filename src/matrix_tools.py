@@ -16,11 +16,13 @@ class SVD(ToolsTemplate):
         return U, s, VT
 
 class LowRankApproximation(ToolsTemplate):
-    def apply_transformation(self,df,k):
+    def apply_transformation(self, df, k):
         '''Apply low rank approximation to the given matrix'''
         U, s, VT = SVD().apply_transformation(df)
         s[k:] = 0
-        m = U @ np.diag(s) @ VT
+        S = np.zeros((U.shape[1], VT.shape[0]))
+        np.fill_diagonal(S, s)
+        m = np.dot(U, np.dot(S, VT))
         return m
 
 class optimal_k(ToolsTemplate):
@@ -35,7 +37,7 @@ class PrincipalComponentAnalysis(ToolsTemplate):
     def apply_transformation(self,df,treshold):
         '''Apply PCA to the given matrix'''
         m = LowRankApproximation().apply_transformation(df,optimal_k().apply_transformation(df,treshold))
-        return m
+        return pd.DataFrame(m, columns=df.columns, index=df.index)
 
 
     
