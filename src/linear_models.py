@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-import opti_tools
+import src.opti_tools
 
 class ModelTemplate(ABC):
     @abstractmethod
@@ -10,10 +10,6 @@ class ModelTemplate(ABC):
     @abstractmethod
     def predict(self, X_test):
         ''' Predict the target variable using the trained model '''
-        pass
-    @abstractmethod
-    def evaluate(self, y_true, y_pred):
-        ''' Evaluate the performance of the trained model '''
         pass
 
 class LinearRegression_test(ModelTemplate):
@@ -26,9 +22,6 @@ class LinearRegression_test(ModelTemplate):
         ''' Predict the target variable using the trained linear regression model '''
         X_test = np.c_[np.ones(X_test.shape[0]), X_test]
         return np.dot(X_test,theta)
-    def evaluate(self, y_true, y_pred):
-        ''' Evaluate the performance of the trained linear regression model '''
-        return np.mean((y_true - y_pred) ** 2)
     def leave_one_out_cross_validation(self, X, y): # TO BE REPAIRED
         ''' Perform leave-one-out cross-validation '''
         n = X.shape[0]
@@ -50,7 +43,6 @@ class LinearRegression_test(ModelTemplate):
         mse = np.mean(np.square(errors[j]) for j in range(3))
         return mse
 
-
 class RidgeRegression(ModelTemplate):
     def train_model(self, X_train, y_train, lambda_):
         ''' Train a ridge regression model '''
@@ -61,21 +53,16 @@ class RidgeRegression(ModelTemplate):
         ''' Predict the target variable using the trained ridge regression model '''
         X_test = np.c_[np.ones(X_test.shape[0]), X_test]
         return np.dot(X_test, theta)
-    def evaluate(self, y_true, y_pred):
-        ''' Evaluate the performance of the trained ridge regression model '''
-        return np.mean((y_true - y_pred) ** 2)
     
 class LassoRegression(ModelTemplate): # TO BE REPAIRED
-    def train_model(self, X_train, y_train, lambda_):
+    def train_model(self, X_train, y_train, lambda_, alpha, num_iters):
         ''' Train a lasso regression model '''
+        descent = src.opti_tools.LassoGradientDescent()
         X_train = np.c_[np.ones(X_train.shape[0]), X_train]
-        theta = np.zeros(X_train.shape[1])
-        theta = opti_tools.LassoGradientDescent().apply_method(X_train, y_train, theta, 0.1, lambda_, 1000)
+        theta = np.random.rand(X_train.shape[1],y_train.shape[1])
+        theta = descent.apply_method(X_train, y_train, theta, alpha, num_iters,lambda_)
         return theta
     def predict(self, X_test, theta):
         ''' Predict the target variable using the trained lasso regression model '''
         X_test = np.c_[np.ones(X_test.shape[0]), X_test]
         return np.dot(X_test, theta)
-    def evaluate(self, y_true, y_pred):
-        ''' Evaluate the performance of the trained lasso regression model '''
-        return np.mean((y_true - y_pred) ** 2)
